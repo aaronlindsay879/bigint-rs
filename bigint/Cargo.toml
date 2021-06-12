@@ -7,3 +7,10 @@ edition = "2018"
 
 [dependencies]
 itertools = "0.10.1"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "bigint"
+harness = false

@@ -1,6 +1,6 @@
-use itertools::{EitherOrBoth, Itertools};
-
 use crate::as_bytes::AsBytes;
+use crate::trait_impl;
+use itertools::{EitherOrBoth, Itertools};
 use std::{cmp::max, ops::Add};
 
 /// A big integer type, supporting arbitrarily sized integers.
@@ -91,7 +91,8 @@ impl BigInt {
     }
 }
 
-impl Add<BigInt> for BigInt {
+trait_impl!(BigInt, Add, add);
+impl Add<&BigInt> for &BigInt {
     type Output = BigInt;
 
     /// Adds two big integers together.
@@ -108,7 +109,7 @@ impl Add<BigInt> for BigInt {
     /// let two = BigInt::from_backing(vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17, 1]);
     /// assert_eq!((one + two).backing(), &vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 18, 1]);
     /// ```
-    fn add(self, rhs: BigInt) -> Self::Output {
+    fn add(self, rhs: &BigInt) -> Self::Output {
         let max_len = max(self.backing.len(), rhs.backing.len());
 
         let mut out = Vec::with_capacity(max_len + 1);
@@ -145,6 +146,6 @@ impl Add<BigInt> for BigInt {
         }
 
         // then finally construct a bigint from the backing vector
-        Self::from_backing(out)
+        BigInt::from_backing(out)
     }
 }
