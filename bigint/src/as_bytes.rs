@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-
 pub trait AsBytes: Sized {
     /// Gets the native byte representation of the type.
     fn as_bytes(&self) -> Vec<u8>;
@@ -22,11 +20,16 @@ macro_rules! single_impl {
             }
 
             fn from_bytes(bytes: &[u8]) -> Option<Self> {
-                let bytes = match bytes.try_into() {
-                    Ok(bytes) => bytes,
-                    Err(_) => return None,
-                };
-                Some(<$type>::from_ne_bytes(bytes))
+                let mut arr = <[u8; std::mem::size_of::<$type>()]>::default();
+
+                if bytes.len() <= std::mem::size_of::<$type>() {
+                    for (index, byte) in bytes.iter().enumerate() {
+                        arr[index] = *byte;
+                    }
+                    Some(<$type>::from_ne_bytes(arr))
+                } else {
+                    None
+                }
             }
 
             fn keep_carry() -> bool {

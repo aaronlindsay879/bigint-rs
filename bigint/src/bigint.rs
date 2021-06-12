@@ -141,7 +141,7 @@ impl Add<&BigInt> for &BigInt {
         }
 
         // if the carry exists and neither of the bigints need to discard the carry, push the carry to the output too
-        if carry != 0 && !(self.discard_carry || rhs.discard_carry) {
+        if !(carry == 0 || self.discard_carry || rhs.discard_carry) {
             out.push(carry);
         }
 
