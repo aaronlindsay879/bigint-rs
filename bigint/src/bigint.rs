@@ -95,6 +95,7 @@ impl Add<BigInt> for BigInt {
     type Output = BigInt;
 
     /// Adds two big integers together.
+    ///
     /// # Example
     /// ```
     /// # use bigint::bigint::*;
@@ -113,28 +114,37 @@ impl Add<BigInt> for BigInt {
         let mut out = Vec::with_capacity(max_len + 1);
         let mut carry = 0;
 
+        // iterate through all bytes of both ints
         for item in self.backing.iter().zip_longest(rhs.backing.iter()) {
+            // get the byte and number of overflows that occur from this position
             let (byte, overflow) = match item {
                 EitherOrBoth::Both(left, right) => {
+                    // if both integers have a byte at this position, add them both together and store the overflow results
                     let (output, overflow_a) = left.overflowing_add(*right);
                     let (output, overflow_b) = output.overflowing_add(carry);
 
+                    // then add the overflows together as ints, so if two overflows occured it returns 2
+                    // this is needed rather than something like (overflow_a || overflow_b) as that would return 1 if both were true, not 2
                     (output, overflow_a as u8 + overflow_b as u8)
                 }
                 EitherOrBoth::Left(single) | EitherOrBoth::Right(single) => {
+                    // if only one integer has a byte at this position, simply add to overflow and return
                     let (output, overflow) = single.overflowing_add(carry);
                     (output, overflow as u8)
                 }
             };
 
+            // then push to output and reset the carry
             out.push(byte);
             carry = overflow;
         }
 
+        // if the carry exists and neither of the bigints need to discard the carry, push the carry to the output too
         if carry != 0 && !(self.discard_carry || rhs.discard_carry) {
             out.push(carry);
         }
 
+        // then finally construct a bigint from the backing vector
         Self::from_backing(out)
     }
 }

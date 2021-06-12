@@ -7,7 +7,7 @@ pub trait AsBytes: Sized {
     /// Converts the native byte representation to the specified type.
     fn from_bytes(bytes: &[u8]) -> Option<Self>;
 
-    /// Whether the keep extra carry values by default.
+    /// Whether the keep extra carry values by default. This is false for unsigned types, and true for signed types.
     ///
     /// If returns true, then extra carry values from operations like addition are simply appended to the end.
     /// If false, the final carry value is discarded.
@@ -37,13 +37,13 @@ macro_rules! single_impl {
 }
 
 macro_rules! impl_asbytes {
-    (keep_carry: $($unsigned:ty )+; discard_carry: $($signed:ty )+) => {
+    (keep_carry: $($keep_carry:ty )+; discard_carry: $($discard_carry:ty )+) => {
         $(
-            single_impl!($unsigned, false);
+            single_impl!($keep_carry, false);
         )+
 
         $(
-            single_impl!($signed, true);
+            single_impl!($discard_carry, true);
         )+
     };
 }
